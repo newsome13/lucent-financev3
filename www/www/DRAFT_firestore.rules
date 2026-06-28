@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // --- GLOBAL SAFETY NET ---
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- REUSABLE PRIMITIVES ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- USER PREFERENCES SECURITY ---
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) && isValidId(userId);
+
+      // Ledger subdocument stored at /users/{userId}/data/ledger
+      match /data/ledger {
+        allow read, write: if isOwner(userId) && isValidId(userId);
+      }
+    }
+
+    // --- COMMUNITY PROFILES SECURITY ---
+    match /community_profiles/{userId} {
+      allow read: if isSignedIn() && isValidId(userId);
+      allow create, update: if isOwner(userId) && isValidId(userId) && (
+        incoming().uid == request.auth.uid &&
+        incoming().username is string &&
+        incoming().username.size() <= 30 &&
+        incoming().username.matches('^[a-zA-Z0-9_]+$')
+      );
+      allow delete: if isOwner(userId) && isValidId(userId);
+    }
+
+    // --- COMMUNITY POSTS SECURITY ---
+    match /community_posts/{postId} {
+      allow get: if isSignedIn() && isValidId(postId);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(postId) && (
+        incoming().authorId == request.auth.uid &&
+        incoming().content is string &&
+        incoming().content.size() <= 500 &&
+        incoming().authorName is string &&
+        incoming().authorName.size() <= 100
+      );
+      allow update: if isSignedIn() && isValidId(postId) && (
+        // Only allow updating if the caller is the author
+        resource.data.authorId == request.auth.uid &&
+        incoming().authorId == request.auth.uid &&
+        // Protect fields and allow list updates for liking / replying
+        (
+          // Action: Like post or comment
+          incoming().diff(existing()).affectedKeys().hasOnly(['likes', 'commentsCount'])
+        )
+      );
+      allow delete: if isSignedIn() && isValidId(postId) && (
+        resource.data.authorId == request.auth.uid
+      );
+    }
+  }
+}

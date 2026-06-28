@@ -1,0 +1,6 @@
+{
+  "name": "Finance Command Center",
+  "description": "A gamified Financial Operating System with Liquid Glass UI. Manage checking zones, conquer debts, track incoming hits, and build healthy habits with Financial XP, levels, seasonal sprints, streak flames, and supportive community profile dashboards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
