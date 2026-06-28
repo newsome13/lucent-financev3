@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Lucent Finance™</string>
+    <string name="title_activity_main">Lucent Finance™</string>
+    <string name="package_name">com.lucent.finance</string>
+    <string name="custom_url_scheme">com.lucent.finance</string>
+</resources>
