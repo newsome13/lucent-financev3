@@ -11,8 +11,8 @@ workflows:
       - npm run build
       - npx cap sync android
       - cd android
-      - ls -la
-      - ls -la gradle/wrapper || true
+      - gradle wrapper
+      - chmod +x gradlew
       - ./gradlew assembleDebug
 
     artifacts:
