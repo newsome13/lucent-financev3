@@ -4,13 +4,14 @@ workflows:
     instance_type: mac_mini_m2
 
     environment:
-      node: 20
+      node: 22
 
     scripts:
       - npm install
       - npm run build
       - npx cap sync android
       - cd android
+      - chmod +x gradlew
       - ./gradlew assembleDebug
 
     artifacts:
