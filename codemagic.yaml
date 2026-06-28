@@ -11,7 +11,9 @@ workflows:
       - npm run build
       - npx cap sync android
       - cd android
-      - gradle assembleDebug
+      - ls -la
+      - ls -la gradle/wrapper || true
+      - ./gradlew assembleDebug
 
     artifacts:
       - android/app/build/outputs/**/*.apk
